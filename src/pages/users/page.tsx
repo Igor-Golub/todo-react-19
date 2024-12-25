@@ -1,5 +1,7 @@
-import { createUser, deleteUser, fetchUsers, User } from "../../shared/api.ts";
-import { FormEvent, startTransition, Suspense, use, useState, useTransition } from "react";
+import { fetchUsers, User } from "../../shared/api.ts";
+import { startTransition, Suspense, use, useActionState, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { createUserAction, deleteUserAction } from "./actions.ts";
 
 // Pattern - Render as your fetch
 const defaultUsersPromise = fetchUsers()
@@ -15,32 +17,28 @@ export function UsersPage() {
 
       <CreateUserForm refetchUsers={refetchUsers}/>
 
-      <Suspense fallback={<>Loading</>}>
-        <UserList usersPromise={usersPromise} refetchUsers={refetchUsers}/>
-      </Suspense>
+      <ErrorBoundary fallback={<div className='text-red-500'>Error</div>}>
+        <Suspense fallback={<>Loading</>}>
+          <UserList usersPromise={usersPromise} refetchUsers={refetchUsers}/>
+        </Suspense>
+      </ErrorBoundary>
     </main>
   )
 }
 
 export function CreateUserForm({ refetchUsers }: { refetchUsers: VoidFunction }) {
-  const [isPending, startTransition] = useTransition()
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-
-    // Stale while revalidate: Eliminate origin latency
-    startTransition(async () => {
-      await createUser({ email: 'email@gmail.com', id: crypto.randomUUID() })
-      refetchUsers()
-    })
-  }
+  const [state, dispatch, isPending] = useActionState(
+    createUserAction({ refetchUsers }),
+    { enteredEmail: '' })
 
   return (
-    <form className='flex gap-2' onSubmit={handleSubmit}>
+    <form className='flex gap-2' action={dispatch}>
       <input
         type='email'
+        name='email'
         disabled={isPending}
         className='border p-2 rounded'
+        defaultValue={state.enteredEmail}
       />
 
       <button
@@ -50,6 +48,8 @@ export function CreateUserForm({ refetchUsers }: { refetchUsers: VoidFunction })
       >
         Add
       </button>
+
+      {state.error && <span>{state.error}</span>}
     </form>
   )
 }
@@ -71,14 +71,10 @@ export function UserCard({ user, refetchUsers }: {
   user: User,
   refetchUsers: VoidFunction
 }) {
-  const [isPending, startTransition] = useTransition()
-
-  const handleRemove = () => {
-    startTransition(async () => {
-      await deleteUser(user.id)
-      refetchUsers()
-    })
-  }
+  const [state, handleRemove, isPending] = useActionState(
+    deleteUserAction({ id: user.id, refetchUsers }),
+    {}
+  )
 
   return (
     <div className='flex gap-2 w-1'>
@@ -86,14 +82,16 @@ export function UserCard({ user, refetchUsers }: {
         {user.email}
       </div>
 
-      <button
-        type='button'
-        disabled={isPending}
-        onClick={handleRemove}
-        className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500'
-      >
-        Remove
-      </button>
+      <form action={handleRemove}>
+        <button
+          disabled={isPending}
+          className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500'
+        >
+          Remove
+        </button>
+      </form>
+
+      {state && <p>{state.error}</p>}
     </div>
   )
 }
