@@ -3,6 +3,7 @@ import { Suspense, useActionState, useOptimistic, useRef } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { CreateUserAction, DeleteUserAction } from "./actions.ts";
 import { useUsers } from "./use-users.ts";
+import { Link } from "react-router-dom";
 
 export function UsersPage() {
   const { useUsersList, deleteUserAction, createUserAction } = useUsers()
@@ -35,11 +36,12 @@ export function CreateUserForm({ createUserAction }: { createUserAction: CreateU
   }
 
   return (
-    <form ref={formRef} className='flex gap-2' action={handleAction}>
+    <form ref={formRef} className='flex gap-2 w-full' action={handleAction}>
       <input
         type='email'
         name='email'
-        className='border p-2 rounded'
+        placeholder='Enter user email'
+        className='border p-2 rounded w-full'
         defaultValue={optimisticState.enteredEmail}
       />
 
@@ -75,13 +77,20 @@ export function UserCard({ user, deleteUserAction }: {
   const [state, handleRemove, isPending] = useActionState(deleteUserAction, {})
 
   return (
-    <div className='flex gap-2 w-1'>
-      <div className='border py-2 px-4 bg-green-100'>
+    <div className='flex gap-4 w-full'>
+      <div className='border py-2 px-4 bg-green-100 w-full'>
         {user.email}
       </div>
 
-      <form action={handleRemove}>
+      <form className='flex gap-2' action={handleRemove}>
         <input type='hidden' name='id' value={user.id}/>
+
+        <Link
+          to={`/${user.id}/tasks`}
+          className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500'
+        >
+          Tasks
+        </Link>
 
         <button
           disabled={isPending}
