@@ -1,31 +1,29 @@
 import { User } from "../../shared/api.ts";
-import { Suspense, use, useActionState } from "react";
+import { Suspense, useActionState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { createUserAction, deleteUserAction } from "./actions.ts";
+import { CreateUserAction, DeleteUserAction } from "./actions.ts";
 import { useUsers } from "./use-users.ts";
 
 export function UsersPage() {
-  const { usersPromise, refetchUsers } = useUsers()
+  const { useUsersList, deleteUserAction, createUserAction } = useUsers()
 
   return (
     <main className="container mx-auto p-4 pt-10 flex flex-col gap-4">
       <h1 className='text-3xl font-bold underline'>Users</h1>
 
-      <CreateUserForm refetchUsers={refetchUsers}/>
+      <CreateUserForm createUserAction={createUserAction} />
 
       <ErrorBoundary fallback={<div className='text-red-500'>Error</div>}>
         <Suspense fallback={<>Loading</>}>
-          <UserList usersPromise={usersPromise} refetchUsers={refetchUsers}/>
+          <UserList useUsersList={useUsersList} deleteUserAction={deleteUserAction} />
         </Suspense>
       </ErrorBoundary>
     </main>
   )
 }
 
-export function CreateUserForm({ refetchUsers }: { refetchUsers: VoidFunction }) {
-  const [state, dispatch, isPending] = useActionState(
-    createUserAction({ refetchUsers }),
-    { enteredEmail: '' })
+export function CreateUserForm({ createUserAction }: { createUserAction: CreateUserAction; }) {
+  const [state, dispatch, isPending] = useActionState(createUserAction, { enteredEmail: '' })
 
   return (
     <form className='flex gap-2' action={dispatch}>
@@ -50,27 +48,24 @@ export function CreateUserForm({ refetchUsers }: { refetchUsers: VoidFunction })
   )
 }
 
-export function UserList({ usersPromise, refetchUsers }: {
-  usersPromise: Promise<User[]>,
-  refetchUsers: VoidFunction
+export function UserList({ useUsersList, deleteUserAction }: {
+  useUsersList: () => User[],
+  deleteUserAction: DeleteUserAction
 }) {
-  const users = use(usersPromise);
+  const users = useUsersList()
 
   return <div className='flex flex-col'>
     {users.map((user) => (
-      <UserCard key={user.id} user={user} refetchUsers={refetchUsers}/>
+      <UserCard key={user.id} user={user} deleteUserAction={deleteUserAction}/>
     ))}
   </div>
 }
 
-export function UserCard({ user, refetchUsers }: {
+export function UserCard({ user, deleteUserAction }: {
   user: User,
-  refetchUsers: VoidFunction
+  deleteUserAction: DeleteUserAction
 }) {
-  const [state, handleRemove, isPending] = useActionState(
-    deleteUserAction({ id: user.id, refetchUsers }),
-    {}
-  )
+  const [state, handleRemove, isPending] = useActionState(deleteUserAction, {})
 
   return (
     <div className='flex gap-2 w-1'>
@@ -79,6 +74,8 @@ export function UserCard({ user, refetchUsers }: {
       </div>
 
       <form action={handleRemove}>
+        <input type='hidden' name='id' value={user.id}/>
+
         <button
           disabled={isPending}
           className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500'
