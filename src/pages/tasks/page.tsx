@@ -7,6 +7,7 @@ import {
   fetchTasks,
   Pagination,
   TaskList,
+  TasksFiltersPanel,
 } from "../../entities/task";
 
 export function TasksPage() {
@@ -22,8 +23,12 @@ export function TasksPage() {
       setTasksPromise(fetchTasks({ page, filters: { userId } }));
     });
 
-  const onPageChange = (page: number) => {
+  const handlePageChange = (page: number) => {
     setTasksPromise(fetchTasks({ page, filters: { userId } }));
+  };
+
+  const handleSearchChange = (searchValue: string) => {
+    setTasksPromise(fetchTasks({ filters: { title: searchValue, userId } }));
   };
 
   return (
@@ -32,6 +37,8 @@ export function TasksPage() {
         Tasks <UserPreview userId={userId} />
       </h1>
 
+      <TasksFiltersPanel onSearchChanged={handleSearchChange} />
+
       <CreateTaskForm userId={userId} refetchTasks={refetchTasks} />
 
       <ErrorBoundary fallback={<div className="text-red-500">Error</div>}>
@@ -39,7 +46,7 @@ export function TasksPage() {
           <TaskList tasksPromise={tasksPromise} refetchTasks={refetchTasks} />
           <Pagination
             tasksPaginated={tasksPromise}
-            onPageChange={onPageChange}
+            onPageChange={handlePageChange}
           />
         </Suspense>
       </ErrorBoundary>
