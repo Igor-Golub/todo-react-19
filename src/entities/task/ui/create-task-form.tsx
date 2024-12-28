@@ -15,13 +15,14 @@ export function CreateTaskForm({ refetchTasks, userId }: CreateTaskFormProps) {
   );
 
   return (
-    <form className="flex gap-2" action={dispatch}>
+    <form className="flex gap-2  w-full" action={dispatch}>
       <input
         type="text"
         name="title"
         disabled={isPending}
-        className="border p-2 rounded"
+        placeholder="Enter task title"
         defaultValue={state.enteredTitle}
+        className="border p-2 rounded  w-full"
       />
 
       <button

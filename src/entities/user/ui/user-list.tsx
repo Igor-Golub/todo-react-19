@@ -10,7 +10,7 @@ export function UserList({ useUsersList, deleteUserAction }: Props) {
   const users = useUsersList();
 
   return (
-    <div className="flex flex-col">
+    <div className="flex gap-2 flex-col">
       {users.map((user) => (
         <UserCard
           key={user.id}

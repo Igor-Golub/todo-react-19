@@ -12,7 +12,7 @@ export function TaskList({ tasksPromise, refetchTasks }: TaskListProps) {
   const tasks = use(tasksPromise);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex gap-2 flex-col">
       {tasks.data.map((task) => (
         <TaskCard key={task.id} task={task} refetchTasks={refetchTasks} />
       ))}

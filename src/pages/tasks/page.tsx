@@ -2,7 +2,12 @@ import { startTransition, Suspense, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
 import { UserPreview } from "../../entities/user";
-import { CreateTaskForm, fetchTasks, TaskList } from "../../entities/task";
+import {
+  CreateTaskForm,
+  fetchTasks,
+  Pagination,
+  TaskList,
+} from "../../entities/task";
 
 export function TasksPage() {
   const { userId = "" } = useParams<{ userId: string }>();
@@ -12,13 +17,14 @@ export function TasksPage() {
   );
 
   const refetchTasks = () =>
-    startTransition(async () =>
-      setTasksPromise(
-        fetchTasks({
-          filters: { userId },
-        }),
-      ),
-    );
+    startTransition(async () => {
+      const { page } = await tasksPromise;
+      setTasksPromise(fetchTasks({ page, filters: { userId } }));
+    });
+
+  const onPageChange = (page: number) => {
+    setTasksPromise(fetchTasks({ page, filters: { userId } }));
+  };
 
   return (
     <main className="container mx-auto p-4 pt-10 flex flex-col gap-4">
@@ -31,6 +37,10 @@ export function TasksPage() {
       <ErrorBoundary fallback={<div className="text-red-500">Error</div>}>
         <Suspense fallback={<>Loading</>}>
           <TaskList tasksPromise={tasksPromise} refetchTasks={refetchTasks} />
+          <Pagination
+            tasksPaginated={tasksPromise}
+            onPageChange={onPageChange}
+          />
         </Suspense>
       </ErrorBoundary>
     </main>

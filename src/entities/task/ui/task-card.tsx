@@ -13,8 +13,8 @@ export function TaskCard({ task, refetchTasks }: TaskCardProps) {
   );
 
   return (
-    <div className="flex gap-2 w-1">
-      <div className="border py-2 px-4 bg-green-100">{task.title}</div>
+    <div className="flex gap-4 w-full">
+      <div className="border py-2 px-4 bg-green-100 w-full">{task.title}</div>
 
       <form action={dispatch}>
         <input type="hidden" name="id" value={task.id} />
