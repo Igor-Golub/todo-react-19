@@ -1,8 +1,3 @@
-export type User = {
-  id: string;
-  email: string;
-};
-
 export async function fetchUsers() {
   return fetch("http://localhost:3001/users").then(
     (res) => res.json() as Promise<User[]>,
