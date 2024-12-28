@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { CreateUserForm, UserList, useUsers } from "../../entities/user";
+import { CreateUserForm, UserList, useUsers } from "@entities/user";
 
 export function UsersPage() {
   const { useUsersList, deleteUserAction, createUserAction } = useUsers();
