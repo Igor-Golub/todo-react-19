@@ -1,7 +1,7 @@
 import { startTransition, Suspense, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
-import { UserPreview } from "@entities/user";
+import { UserPreview } from "@entities/user/@x/task";
 import {
   CreateTaskForm,
   fetchTasks,
